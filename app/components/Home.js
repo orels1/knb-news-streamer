@@ -66,6 +66,7 @@ class Home extends React.Component {
                     <h2 className="welcome"> Канобу | Новостной стрим </h2>
                     <button className="btn btn-primary" onClick={this.handleNewsRefresh.bind(this)}>Обновить новости</button>
                     <button className="btn btn-info" onClick={this.handleNewsTop.bind(this, 3600000)}>Топ за час</button>
+                    <button className="btn btn-info" onClick={this.handleNewsTop.bind(this, 86400000)}>Топ за день</button>
                     <NewsList />
                 </div>
             </div>
