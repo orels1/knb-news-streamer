@@ -87,7 +87,7 @@ app.get('/api/news/refresh', function(req, res, next){
             ) {
                 io.emit('news update event', tweet);
                 var tweet = new Tweet({
-                    id: tweet.id_str,
+                    id_str: tweet.id_str,
                     user: {
                         id_str: tweet.user.id,
                         name: tweet.user.name,
@@ -137,7 +137,7 @@ app.get('/api/news/top', function(req, res, next){
         .exec(function(err, tweets){
             if (err) return next(err);
 
-            var reqIds = _.map(tweets, function(tweet){return tweet.id}).toString();
+            var reqIds = _.map(tweets, function(tweet){return tweet.id_str}).toString();
 
             twClient.get('statuses/lookup', {id: reqIds, include_entities: true}, function(err, tweets, response){
                 if (err) return next(err);

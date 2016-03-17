@@ -5,7 +5,7 @@ var mongoose = require('mongoose');
 var moment = require('moment');
 
 var tweetSchema = new mongoose.Schema({
-    id: String,
+    id_str: String,
     user: {
         id_str: {type: String, default: ''},
         name: {type: String, default: 'Tweet Author'},

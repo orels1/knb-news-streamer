@@ -29,7 +29,7 @@ class NewsList extends React.Component{
     render() {
         let newsList = this.state.news.map((newsItem, index) => {
             return (
-                <div key={parseInt(newsItem.id)} className='list-group-item animated fadeIn' >
+                <div key={parseInt(newsItem.id_str)} className='list-group-item animated fadeIn' >
                     {newsItem.favorite_count > 100 &&
                     <div className="hotMarker">
                         <span className="glyphicon glyphicon-fire"></span>
@@ -52,8 +52,8 @@ class NewsList extends React.Component{
                                     {newsItem.text}
                                 </span>
                             </div>
-                            {newsItem.entities.media &&
-                                <div className="twitterImage" style={{backgroundImage: 'url('+newsItem.entities.media[0].media_url+')'}}>
+                            {newsItem.entities[0].media &&
+                                <div className="twitterImage" style={{backgroundImage: 'url('+newsItem.entities[0].media[0].media_url+')'}}>
                                 </div>
                             }
                             <br />
