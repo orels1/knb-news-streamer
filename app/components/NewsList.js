@@ -29,7 +29,12 @@ class NewsList extends React.Component{
     render() {
         let newsList = this.state.news.map((newsItem, index) => {
             return (
-                <div key={newsItem.id} className='list-group-item animated fadeIn' >
+                <div key={parseInt(newsItem.id)} className='list-group-item animated fadeIn' >
+                    {newsItem.favorite_count > 100 &&
+                    <div className="hotMarker">
+                        <span className="glyphicon glyphicon-fire"></span>
+                    </div>
+                    }
                     <div className='media'>
                         <div className='media-body'>
                             <div className="field">

@@ -48,7 +48,12 @@ class Home extends React.Component {
 
     handleNewsTop(time){
         NewsListActions.clearNews();
-        NewsListActions.getTop(time);
+
+        var payload = {
+            time: time,
+            history: this.props.history
+        };
+        NewsListActions.getTop(payload);
     }
 
     render(){
@@ -60,7 +65,7 @@ class Home extends React.Component {
                 <div className="col-md-10 col-md-offset-1">
                     <h2 className="welcome"> Канобу | Новостной стрим </h2>
                     <button className="btn btn-primary" onClick={this.handleNewsRefresh.bind(this)}>Обновить новости</button>
-                    <button className="btn btn-info" onClick={this.handleNewsTop.bind(null, 3600000)}>Топ за час</button>
+                    <button className="btn btn-info" onClick={this.handleNewsTop.bind(this, 3600000)}>Топ за час</button>
                     <NewsList />
                 </div>
             </div>

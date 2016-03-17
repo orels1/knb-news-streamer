@@ -2,6 +2,7 @@
  * Created by orel- on 15/Mar/16.
  */
 import alt from '../alt';
+import {extend} from 'underscore';
 
 class NewsListActions {
     constructor() {
@@ -29,14 +30,15 @@ class NewsListActions {
 
     };
 
-    getTop(time){
+    getTop(payload){
         $.ajax({
             type: 'GET',
             url: '/api/news/top',
-            data: {time: time}
+            data: {time: payload.time}
         })
             .done((data) =>{
-                this.actions.getTopSuccess(data);
+                payload.data = data;
+                this.actions.getTopSuccess(payload);
             })
             .fail((jqXhr) =>{
                 this.actions.getTopFail(jqXhr);

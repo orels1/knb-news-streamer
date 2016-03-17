@@ -93,9 +93,7 @@ app.get('/api/news/refresh', function(req, res, next){
                         name: tweet.user.name,
                         screen_name: tweet.user.screen_name
                     },
-                    entities: {
-                        media: tweet.entities.media ? tweet.entities.media[0].media_url : ''
-                    },
+                    entities: tweet.entities,
                     text: tweet.text,
                     retweet_count:  tweet.retweet_count,
                     favorite_count: tweet.favorite_count
@@ -140,8 +138,18 @@ app.get('/api/news/top', function(req, res, next){
             if (err) return next(err);
 
             var reqIds = _.map(tweets, function(tweet){return tweet.id}).toString();
-            twClient.get('statuses/lookup', {id: reqIds, include_entities: true}, function(err, tweets){
+
+            twClient.get('statuses/lookup', {id: reqIds, include_entities: true}, function(err, tweets, response){
                 if (err) return next(err);
+
+
+                if(response.statusCode == 429){
+                    console.log('No requests left');
+                    res.status(429).send('Слишком много запросов');
+                }
+
+                //Sort descending by retweets + likes
+                tweets = _.sortBy(tweets, function(tweet){return(-(tweet.retweet_count + tweet.favorite_count))});
                 res.status(200).send(tweets);
             });
         });

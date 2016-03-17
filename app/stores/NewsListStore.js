@@ -35,8 +35,11 @@ class NewsListStore{
         toastr.error(jqXhr.responseText);
     }
 
-    onGetTopSuccess(data){
-        this.news = data;
+    onGetTopSuccess(payload){
+        this.news = payload.data;
+
+        //Different routes
+        //payload.history.pushState(null, '/news/top/' + payload.time);
     }
 
     onGetTopFail(jqXhr){
