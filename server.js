@@ -43,7 +43,7 @@ mongoose.connection.on('error', function() {
 });
 
 // App Middleware
-app.set('port', process.env.PORT || 80);
+app.set('port', process.env.PORT || 4000);
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
