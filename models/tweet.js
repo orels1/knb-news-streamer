@@ -15,7 +15,7 @@ var tweetSchema = new mongoose.Schema({
     text: {type: String, default: 'tweet text'},
     retweet_count:  {type: Number, default: '0'},
     favorite_count: {type: Number, default: '0'},
-    added: {type: Number, default: moment().utcOffset(3).format('x')}
+    added: {type: Number, default: '145825842781'}
 });
 
 module.exports = mongoose.model('Tweet', tweetSchema);

@@ -96,7 +96,8 @@ app.get('/api/news/refresh', function(req, res, next){
                     entities: tweet.entities,
                     text: tweet.text,
                     retweet_count:  tweet.retweet_count,
-                    favorite_count: tweet.favorite_count
+                    favorite_count: tweet.favorite_count,
+                    added: moment().utcOffset(3).format('x')
                 });
 
                 tweet.save(function(err, tweet){
@@ -120,6 +121,7 @@ app.get('/api/news/latest', function (req, res, next) {
     Tweet
         .find({})
         .limit(10)
+        .sort({added: 1})
         .exec(function(err, news){
             if (err) return next(err);
             res.status(200).send(news);

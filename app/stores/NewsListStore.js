@@ -12,14 +12,12 @@ class NewsListStore{
     }
 
     onPushTweet(data){
-        if(where(this.news, {id: data.id}).length == 0){
             this.news.unshift(data);
 
             //Check if too much on screen
-            if(this.news.length >= 4){
+            if(this.news.length >= 10){
                 //Remove last item
                 this.news.splice(this.news.length-1,1);
-            }
         }
     }
 
