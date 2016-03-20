@@ -9,6 +9,7 @@ class NavbarStore {
         this.bindActions(NavbarActions);
         this.searchQuery = '';
         this.ajaxAnimationClass = '';
+        this.streamState = false;
     }
 
     //onFindNewsSuccess(payload) {
@@ -28,6 +29,26 @@ class NavbarStore {
 
     onUpdateAjaxAnimation(className) {
         this.ajaxAnimationClass = className; //fadein or fadeout
+    }
+
+    onGetStreamStatusSuccess(data){
+        this.streamState = data;
+    }
+
+    onGetStreamStatusFail(jqXhr){
+        toastr.error(jqXhr.responseText);
+    }
+
+    onUpdateStreamStatus(data){
+        this.streamState = data;
+    }
+
+    onControlStreamSuccess(data){
+        toastr.success(data);
+    };
+
+    onControlStreamFail(jqXhr){
+        toastr.error(jqXhr.responseText);
     }
 }
 

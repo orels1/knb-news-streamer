@@ -12,12 +12,12 @@ class NewsListStore{
     }
 
     onPushTweet(data){
-            this.news.unshift(data);
+        this.news.unshift(data);
 
-            //Check if too much on screen
-            if(this.news.length >= 10){
-                //Remove last item
-                this.news.splice(this.news.length-1,1);
+        //Check if too much on screen
+        if(this.news.length >= 10){
+            //Remove last item
+            this.news.splice(this.news.length-1,1);
         }
     }
 
@@ -35,9 +35,6 @@ class NewsListStore{
 
     onGetTopSuccess(payload){
         this.news = payload.data;
-
-        //Different routes
-        //payload.history.pushState(null, '/news/top/' + payload.time);
     }
 
     onGetTopFail(jqXhr){

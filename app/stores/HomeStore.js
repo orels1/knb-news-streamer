@@ -8,14 +8,6 @@ class HomeStore {
     constructor(){
         this.bindActions(HomeActions);
     }
-
-    onRefreshNewsSuccess(data){
-        toastr.success(data);
-    };
-
-    onRefreshNewsFail(jqXhr){
-        toastr.error(jqXhr.responseText);
-    }
 }
 
 export default alt.createStore(HomeStore);

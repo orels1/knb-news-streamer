@@ -40,12 +40,6 @@ class Home extends React.Component {
         this.setState(state);
     }
 
-    handleNewsRefresh(event){
-        event.preventDefault();
-        NewsListActions.clearNews();
-        HomeActions.refreshNews();
-    }
-
     handleNewsTop(time){
         NewsListActions.clearNews();
 
@@ -60,15 +54,7 @@ class Home extends React.Component {
 
         return(
             <div>
-                <div className="clearfix"></div>
-
-                <div className="col-md-10 col-md-offset-1">
-                    <h2 className="welcome"> Канобу | Новостной стрим </h2>
-                    <button className="btn btn-primary" onClick={this.handleNewsRefresh.bind(this)}>Обновить новости</button>
-                    <button className="btn btn-info" onClick={this.handleNewsTop.bind(this, 3600000)}>Топ за час</button>
-                    <button className="btn btn-info" onClick={this.handleNewsTop.bind(this, 86400000)}>Топ за день</button>
-                    <NewsList />
-                </div>
+                <NewsList />
             </div>
         );
     }

@@ -11,7 +11,7 @@ var tweetSchema = new mongoose.Schema({
         name: {type: String, default: 'Tweet Author'},
         screen_name: {type: String, default: 'tweetAuthor'}
     },
-    entities: Array,
+    entities: mongoose.Schema.Types.Mixed,
     text: {type: String, default: 'tweet text'},
     retweet_count:  {type: Number, default: '0'},
     favorite_count: {type: Number, default: '0'},

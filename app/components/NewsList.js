@@ -2,7 +2,7 @@
  * Created by orel- on 15/Mar/16.
  */
 import React from 'react';
-import {Link} from 'react-router';
+import {isEqual} from 'underscore';
 import NewsListStore from '../stores/NewsListStore';
 import NewsListActions from '../actions/NewsListActions';
 
@@ -15,11 +15,26 @@ class NewsList extends React.Component{
 
     componentDidMount(){
         NewsListStore.listen(this.onChange);
-        NewsListActions.getLatestNews();
+
+        if(this.props.params){
+            NewsListActions.getTop({time: this.props.params.time});
+        }else{
+            NewsListActions.getLatestNews();
+        }
     }
 
     componentWillUnmount(){
         NewsListStore.unlisten(this.onChange);
+    }
+
+    componentDidUpdate(prevProps) {
+        if (!isEqual(prevProps.params, this.props.params)){
+            if(this.props.params){
+                NewsListActions.getTop({time: this.props.params.time});
+            }else{
+                NewsListActions.getLatestNews();
+            }
+        }
     }
 
     onChange(state) {
@@ -29,7 +44,7 @@ class NewsList extends React.Component{
     render() {
         let newsList = this.state.news.map((newsItem, index) => {
             return (
-                <div key={parseInt(newsItem.id_str)} className='list-group-item animated fadeIn' >
+                <div key={newsItem.id_str} className='list-group-item animated fadeIn' >
                     {newsItem.favorite_count > 100 &&
                     <div className="hotMarker">
                         <span className="glyphicon glyphicon-fire"></span>
@@ -52,8 +67,8 @@ class NewsList extends React.Component{
                                     {newsItem.text}
                                 </span>
                             </div>
-                            {newsItem.entities[0].media &&
-                                <div className="twitterImage" style={{backgroundImage: 'url('+newsItem.entities[0].media[0].media_url+')'}}>
+                            {newsItem.entities.media &&
+                                <div className="twitterImage" style={{backgroundImage: 'url('+newsItem.entities.media[0].media_url+')'}}>
                                 </div>
                             }
                             <br />
@@ -66,8 +81,10 @@ class NewsList extends React.Component{
         });
 
         return (
-            <div className='list-group newsList'>
-                {newsList}
+            <div className="col-md-10 col-md-offset-1">
+                <div className='list-group newsList'>
+                    {newsList}
+                </div>
             </div>
         );
     }

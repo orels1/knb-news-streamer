@@ -5,25 +5,14 @@ import alt from '../alt';
 
 class HomeActions {
     constructor() {
-        this.generateActions(
-            'refreshNewsSuccess',
-            'refreshNewsFail'
-        );
+        // this.generateActions(
+        //
+        // );
     }
 
-    refreshNews(){
-        $.ajax({
-            type: 'GET',
-            url: '/api/news/refresh'
-            }
-        )
-            .done((data) => {
-                this.actions.refreshNewsSuccess(data);
-            })
-            .fail((jqXhr) => {
-                this.actions.refreshNewsFail(jqXhr);
-            });
-    }
+    test(){
+
+    };
 }
 
 export default alt.createActions(HomeActions);

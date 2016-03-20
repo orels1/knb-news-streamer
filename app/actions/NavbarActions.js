@@ -10,12 +10,18 @@ class NavbarActions {
             'updateSearchQuery',
             'updateAjaxAnimation',
             'findNewsSuccess',
-            'findNewsFail'
+            'findNewsFail',
+            'getStreamStatusSuccess',
+            'getStreamStatusFail',
+            'updateStreamStatus',
+            'controlStreamSuccess',
+            'controlStreamFail'
         );
     }
 
     findNews(payload){
         $.ajax({
+            type: 'GET',
             url: '/api/news/search',
             data: { name: payload.searchQuery }
         })
@@ -25,6 +31,32 @@ class NavbarActions {
             })
             .fail(() => {
                 this.actions.findNewsFail(payload);
+            });
+    }
+
+    getStreamStatus(){
+        $.ajax({
+            type: 'GET',
+            url: '/api/news/controls'
+        })
+            .done((data) => {
+                this.actions.getStreamStatusSuccess(data);
+            })
+            .fail((jqXhr) => {
+                this.actions.getStreamStatusFail(jqXhr);
+            })
+    }
+
+    controlStream(state){
+        $.ajax({
+                type: state ? 'DELETE' : 'POST',
+                url: '/api/news/controls'
+            })
+            .done((data) => {
+                this.actions.controlStreamSuccess(data);
+            })
+            .fail((jqXhr) => {
+                this.actions.controlStreamFail(jqXhr);
             });
     }
 

@@ -18,10 +18,13 @@ moment.locale('ru');
 
 //News feeds
 var Twitter = require('twitter');
+var twStream = {};
+var streamState = false;
 
 // DB
 var mongoose = require('mongoose');
 var Tweet = require('./models/tweet');
+var TweetSub = require('./models/twSub');
 var config = require('./config');
 
 var express = require('express');
@@ -56,11 +59,6 @@ app.use(cookieParser());
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
 
-io.sockets.on('connection', function(socket) {
-    console.log('user connected');
-});
-
-
 server.listen(app.get('port'), function() {
     console.log('Express server listening on port ' + app.get('port'));
 });
@@ -73,44 +71,91 @@ var twClient = new Twitter({
     access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET
 });
 
-//Streaming test
-app.get('/api/news/refresh', function(req, res, next){
+/**
+ * POST /api/news/controls
+ * Starts a twitter streaming process
+ * */
+app.post('/api/news/controls', function(req, res, next){
 
-    twClient.stream('statuses/filter', {follow: config.twFollow.toString()}, function(stream) {
-        res.send('Started streaming');
+    //Get list of feeds to follow
+    TweetSub
+        .find({})
+        .exec(function(err, twSub){
+            if(err) return next(err);
 
-        stream.on('data', function(tweet) {
-            if(
-                !tweet.delete &&
-                (tweet.lang == 'en' || tweet.lang == 'ru') &&
-                _.contains(config.twFollow, tweet.user.id)
-            ) {
-                io.emit('news update event', tweet);
-                var tweet = new Tweet({
-                    id_str: tweet.id_str,
-                    user: {
-                        id_str: tweet.user.id,
-                        name: tweet.user.name,
-                        screen_name: tweet.user.screen_name
-                    },
-                    entities: tweet.entities,
-                    text: tweet.text,
-                    retweet_count:  tweet.retweet_count,
-                    favorite_count: tweet.favorite_count,
-                    added: moment().utcOffset(3).format('x')
+            //If found - start streaming
+            if(twSub){
+                var follow = _.pluck(twSub, 'id_str');
+
+                twClient.stream('statuses/filter', {follow: follow.toString()}, function(stream) {
+                    res.status(200).send('Стриминг начат');
+                    //Expose twitter stream
+                    twStream = stream;
+                    streamState = true;
+
+                    //Send change in stream state to client
+                    io.emit('news stream event', true);
+
+                    stream.on('data', function(tweet) {
+                        if(_.contains(follow, tweet.user.id_str)){
+                            var tweetItem = new Tweet({
+                                id_str: tweet.id_str,
+                                user: {
+                                    id_str: tweet.user.id,
+                                    name: tweet.user.name,
+                                    screen_name: tweet.user.screen_name
+                                },
+                                entities: tweet.entities,
+                                text: tweet.text,
+                                retweet_count:  tweet.retweet_count,
+                                favorite_count: tweet.favorite_count,
+                                added: parseInt(moment().utcOffset(3).format('x'))
+                            });
+
+                            tweetItem.save(function(err, tweet){
+                                if(err) io.emit('news update error', err);
+
+                                io.emit('news update event', tweet);
+                            })
+                        }
+                    });
+
+                    stream.on('error', function(error) {
+                        next(error);
+                        streamState = false;
+
+                        //Send change in stream state to client
+                        io.emit('news stream event', false);
+                    });
                 });
-
-                tweet.save(function(err, tweet){
-                    if(err) io.emit('news update error', err);
-                })
+            }else{
+                //If not found - send error
+                res.status(400).send("Добавьте подписки в настройках");
             }
         });
+});
 
-        stream.on('error', function(error) {
-            next(error);
-        });
-    });
+/**
+ * DELETE /api/news/controls
+ * Destroys (stops) current twitter stream
+ * */
+app.delete('/api/news/controls', function(req, res, next){
+    twStream.destroy();
+    streamState = false;
 
+    //Send change in stream state to client
+    io.emit('news stream event', false);
+
+    res.status(200).send('Стриминг остановлен');
+});
+
+/**
+ * GET /api/news/controls
+ * Returns current stream state (true, false)
+ * For manual check ONLY (!)
+ * */
+app.get('/api/news/controls', function(req, res, next){
+    res.status(200).send(streamState);
 });
 
 /**
@@ -121,7 +166,7 @@ app.get('/api/news/latest', function (req, res, next) {
     Tweet
         .find({})
         .limit(10)
-        .sort({added: 1})
+        .sort({added: -1})
         .exec(function(err, news){
             if (err) return next(err);
             res.status(200).send(news);
@@ -132,7 +177,7 @@ app.get('/api/news/latest', function (req, res, next) {
  * GET /api/news/top
  * */
 app.get('/api/news/top', function(req, res, next){
-    var time = moment().format('x') - req.query.time;
+    var time = moment().format('x') - parseInt(req.query.time);
 
     Tweet
         .find({added: {$gt: time}})
@@ -158,6 +203,60 @@ app.get('/api/news/top', function(req, res, next){
 
 });
 
+/**
+ * GET /api/subs/twitter
+ * Returns list of current twitter feeds
+ * */
+app.get('/api/subs/twitter', function(req, res, next){
+    TweetSub
+        .find({})
+        .exec(function(err, twSub){
+            if (err) return next(err);
+
+            res.status(200).send(twSub);
+        });
+});
+
+/**
+ * POST /api/subs/twitter
+ * Adds new subId to collection
+ * */
+app.post('/api/subs/twitter', function(req, res, next){
+    twClient.get('users/show', {screen_name: req.body.name}, function(err, user, response){
+        if(response.statusCode == 429){
+            console.log('No requests left');
+            res.status(429).send('Слишком много запросов');
+        }
+
+        var twSub = new TweetSub({
+            id_str: user.id_str,
+            name: user.name,
+            screen_name: user.screen_name
+        });
+        twSub.save(function(err, twSub){
+            if(err) return next(err);
+            res.status(200).send(twSub);
+        });
+    });
+
+});
+
+/**
+ * DELETE /api/subs/twitter
+ * Removes a sub from twitter feeds list
+ * */
+app.delete('/api/subs/twitter', function(req, res, next){
+    TweetSub
+        .findOne({_id: req.body.id})
+        .exec(function(err, twSub){
+            if(err) return next(err);
+
+            twSub.remove(function(err){
+                if(err) return next(err);
+                res.status(200).end();
+            })
+        });
+});
 
 // React Middleware
 app.use(function(req, res) {
