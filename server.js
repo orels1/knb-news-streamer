@@ -258,6 +258,13 @@ app.delete('/api/subs/twitter', function(req, res, next){
         });
 });
 
+/**
+ * GET /api/pipe
+ * Pipes anything through the server */
+app.get('/api/pipe', function(req, res, next){
+    res.redirect('oauth2test://foo?access_token='+req.query.code);
+});
+
 // React Middleware
 app.use(function(req, res) {
     Router.match({ routes: routes.default, location: req.url }, function(err, redirectLocation, renderProps) {
