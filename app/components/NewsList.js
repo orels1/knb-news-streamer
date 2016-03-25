@@ -81,7 +81,7 @@ class NewsList extends React.Component{
         });
 
         return (
-            <div className="col-md-10 col-md-offset-1">
+            <div className="col-md-6 col-md-offset-3">
                 <div className='list-group newsList'>
                     {newsList}
                 </div>

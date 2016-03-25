@@ -97,26 +97,28 @@ app.post('/api/news/controls', function(req, res, next){
                     io.emit('news stream event', true);
 
                     stream.on('data', function(tweet) {
-                        if(_.contains(follow, tweet.user.id_str)){
-                            var tweetItem = new Tweet({
-                                id_str: tweet.id_str,
-                                user: {
-                                    id_str: tweet.user.id,
-                                    name: tweet.user.name,
-                                    screen_name: tweet.user.screen_name
-                                },
-                                entities: tweet.entities,
-                                text: tweet.text,
-                                retweet_count:  tweet.retweet_count,
-                                favorite_count: tweet.favorite_count,
-                                added: parseInt(moment().utcOffset(3).format('x'))
-                            });
+                        if(tweet.user) {
+                            if (_.contains(follow, tweet.user.id_str)) {
+                                var tweetItem = new Tweet({
+                                    id_str: tweet.id_str,
+                                    user: {
+                                        id_str: tweet.user.id,
+                                        name: tweet.user.name,
+                                        screen_name: tweet.user.screen_name
+                                    },
+                                    entities: tweet.entities,
+                                    text: tweet.text,
+                                    retweet_count: tweet.retweet_count,
+                                    favorite_count: tweet.favorite_count,
+                                    added: parseInt(moment().utcOffset(3).format('x'))
+                                });
 
-                            tweetItem.save(function(err, tweet){
-                                if(err) io.emit('news update error', err);
+                                tweetItem.save(function (err, tweet) {
+                                    if (err) io.emit('news update error', err);
 
-                                io.emit('news update event', tweet);
-                            })
+                                    io.emit('news update event', tweet);
+                                })
+                            }
                         }
                     });
 
@@ -181,6 +183,8 @@ app.get('/api/news/top', function(req, res, next){
 
     Tweet
         .find({added: {$gt: time}})
+        .sort({id_str: -1})
+        .limit(100)
         .exec(function(err, tweets){
             if (err) return next(err);
 
@@ -193,11 +197,27 @@ app.get('/api/news/top', function(req, res, next){
                 if(response.statusCode == 429){
                     console.log('No requests left');
                     res.status(429).send('Слишком много запросов');
+                }else{
+                    //Update db info
+                    tweets.forEach(function(element, i){
+                        Tweet
+                            .update(
+                                {id_str: element.id_str},
+                                {
+                                    $set:{
+                                        favorite_count: element.favorite_count,
+                                        retweet_count: element.retweet_count
+                                    }
+                                },
+                                function(err){
+                                    if(err) return next(err);
+                                }
+                            );
+                    });
+                    //Sort descending by retweets + likes
+                    tweets = _.sortBy(tweets, function(tweet){return(-(tweet.retweet_count + tweet.favorite_count))});
+                    res.status(200).send(tweets);
                 }
-
-                //Sort descending by retweets + likes
-                tweets = _.sortBy(tweets, function(tweet){return(-(tweet.retweet_count + tweet.favorite_count))});
-                res.status(200).send(tweets);
             });
         });
 
