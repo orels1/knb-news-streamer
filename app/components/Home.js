@@ -40,21 +40,11 @@ class Home extends React.Component {
         this.setState(state);
     }
 
-    handleNewsTop(time){
-        NewsListActions.clearNews();
-
-        var payload = {
-            time: time,
-            history: this.props.history
-        };
-        NewsListActions.getTop(payload);
-    }
-
     render(){
 
         return(
             <div>
-                <NewsList />
+                <NewsList params={{time: "3600000"}} />
             </div>
         );
     }

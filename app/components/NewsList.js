@@ -83,6 +83,11 @@ class NewsList extends React.Component{
         return (
             <div className="col-md-6 col-md-offset-3">
                 <div className='list-group newsList'>
+                    {this.state.news.length == 0 &&
+                        <div className="list-group-item animated fadeIn">
+                            Нет твиттов за выбранный период
+                        </div>
+                    }
                     {newsList}
                 </div>
             </div>
