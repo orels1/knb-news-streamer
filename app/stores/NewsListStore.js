@@ -40,6 +40,11 @@ class NewsListStore{
     onGetTopFail(jqXhr){
         toastr.error(jqXhr.responseText);
     }
+    
+    onReplaceTweets(data){
+        console.log('replacing tweets');
+        this.news = data;
+    }
 }
 
 export default alt.createStore(NewsListStore);

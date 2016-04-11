@@ -10,6 +10,7 @@ class NavbarStore {
         this.searchQuery = '';
         this.ajaxAnimationClass = '';
         this.streamState = false;
+        this.lastUpdate = 'Никогда';
     }
 
     //onFindNewsSuccess(payload) {

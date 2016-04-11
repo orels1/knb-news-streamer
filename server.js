@@ -113,10 +113,9 @@ app.post('/api/news/controls', function(req, res, next){
                                     added: parseInt(moment().utcOffset(3).format('x'))
                                 });
 
+                                //Add tweets to DB
                                 tweetItem.save(function (err, tweet) {
                                     if (err) io.emit('news update error', err);
-
-                                    io.emit('news update event', tweet);
                                 })
                             }
                         }
@@ -179,19 +178,57 @@ app.get('/api/news/latest', function (req, res, next) {
  * GET /api/news/top
  * */
 app.get('/api/news/top', function(req, res, next){
-    var time = moment().format('x') - parseInt(req.query.time);
+    getTweetTop(req.query.time, function(tweets){
+        console.log(new Date(), ' Sending tweets');
+        res.status(200).send(tweets);
+    })
+});
+
+/**
+ * Cronjob for top auto-update
+ * */
+new CronJob('00 */5 * * * *', function() {
+    console.log(new Date(),' Updating tweets');
+    tweetTop(3600000);
+    io.emit('news update event', moment().format('hh:mm'));
+}, null, true, 'Europe/Moscow');
+
+/**
+ * Cronjob for top auto-push
+ * */
+new CronJob('00 */6 * * * *', function() {
+    getTweetTop(3600000, function(tweets){
+        console.log(new Date(), ' Pushing tweets');
+        io.emit('news refresh event', tweets);
+    })
+}, null, true, 'Europe/Moscow');
+
+
+/**
+ * Twitter top function
+ * Extracted for multiple uses
+ * */
+function tweetTop(time, callback){
+    
+    //If was requested manually - parse request
+    //Else - get the last hour
+    if(time){
+        var reqTime = moment().format('x') - parseInt(time);   
+    }else{
+        var reqTime = moment().format('x') - 3600000;
+    }
 
     Tweet
-        .find({added: {$gt: time}})
+        .find({added: {$gt: reqTime}})
         .sort({id_str: -1})
         .limit(100)
         .exec(function(err, tweets){
-            if (err) return next(err);
+            if (err) throw err;
 
             var reqIds = _.map(tweets, function(tweet){return tweet.id_str}).toString();
 
             twClient.get('statuses/lookup', {id: reqIds, include_entities: true}, function(err, tweets, response){
-                if (err) return next(err);
+                if (err) throw err;
 
 
                 if(response.statusCode == 429){
@@ -210,18 +247,42 @@ app.get('/api/news/top', function(req, res, next){
                                     }
                                 },
                                 function(err){
-                                    if(err) return next(err);
+                                    if(err) throw err;
                                 }
                             );
                     });
                     //Sort descending by retweets + likes
                     tweets = _.sortBy(tweets, function(tweet){return(-(tweet.retweet_count + tweet.favorite_count))});
-                    res.status(200).send(tweets);
+                    
+                    //If has callback - return tweets
+                    if(callback){
+                        callback(tweets);
+                    }
                 }
             });
         });
+}
 
-});
+/** 
+ * Get top tweets from DB
+ * Proper returns*/
+function getTweetTop(time, callback){
+    var reqTime = moment().format('x') - parseInt(time);
+    Tweet
+        .find({added: {$gt: reqTime}})
+        .limit(100)
+        .sort({
+            retweet_count: -1,
+            favorite_count: -1
+        })
+        .exec(function(err, tweets){
+            if (err) throw err;
+            
+            if (tweets){
+                callback(tweets);
+            }
+        });
+}
 
 /**
  * GET /api/subs/twitter

@@ -35,6 +35,10 @@ class Navbar extends React.Component {
         socket.on('news stream event', (data) => {
             NavbarActions.updateStreamStatus(data);
         });
+        
+        socket.on('news update event', (data) => {
+            this.setState({lastUpdate : data});
+        })
     }
 
     componentWillUnmount(){
@@ -107,6 +111,7 @@ class Navbar extends React.Component {
                             </li>
                         </ul>
                         <ul className="nav navbar-nav navbar-right">
+                            <li><a href="#">Фид обновлен: {this.state.lastUpdate}</a></li>
                             <button
                                 onClick={this.handleStreamControl.bind(this)}
                                 className={"btn btn-sm navbar-btn " + (this.state.streamState ? 'btn-danger' : 'btn-success')}

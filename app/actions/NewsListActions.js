@@ -12,7 +12,8 @@ class NewsListActions {
             'getLatestSuccess',
             'getLatestFail',
             'getTopSuccess',
-            'getTopFail'
+            'getTopFail',
+            'replaceTweets'
         );
     }
 

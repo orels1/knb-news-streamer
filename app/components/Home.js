@@ -30,6 +30,12 @@ class Home extends React.Component {
         socket.on('news update error', (err) => {
             toastr.error(err.responseText);
         });
+
+        socket.on('news refresh event', (data) => {
+            if (data){
+                NewsListActions.replaceTweets(data);
+            }
+        });
     }
 
     componentWillUnmount() {
