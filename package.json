@@ -2,6 +2,7 @@
   "name": "knb-news-streamer",
   "description": "News streamer and searcher service for KNB",
   "version": "0.9.0",
+  "engine": "node",
   "repository": {
     "type": "git",
     "url": "https://github.com/orels"
