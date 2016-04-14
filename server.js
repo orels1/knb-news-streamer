@@ -70,6 +70,7 @@ var twClient = new Twitter({
     access_token_key: process.env.TWITTER_ACCESS_TOKEN_KEY,
     access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET
 });
+console.log(process.env.TWITTER_CONSUMER_KEY)
 
 /**
  * POST /api/news/controls
